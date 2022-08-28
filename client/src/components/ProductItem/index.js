@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { pluralize } from "../../utils/helpers"
+import { pluralize } from "../../utils/helpers";
 
 function ProductItem(item) {
   const {
@@ -8,7 +8,7 @@ function ProductItem(item) {
     name,
     _id,
     price,
-    quantity
+    quantity,
   } = item;
 
   return (

@@ -2,7 +2,7 @@ import { useReducer } from 'react';
 import {
   UPDATE_PRODUCTS,
   UPDATE_CATEGORIES,
-  UPDATE_CURRENT_CATEGORY
+  UPDATE_CURRENT_CATEGORY,
 } from "./actions";
 
 export const reducer = (state, action) => {
@@ -11,7 +11,7 @@ export const reducer = (state, action) => {
     [UPDATE_PRODUCTS]: () => ({ ...state, products: [ ...action.products ] }),
     [UPDATE_CATEGORIES]: () => ({ ...state, categories: [ ...action.categories ] }),
     [UPDATE_CURRENT_CATEGORY]: () => ({ ...state, currentCategory: action.currentCategory }),
-  }
+  };
   const exec = actions[action.type] ?? defaultAction;
 
   return exec();

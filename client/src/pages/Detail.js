@@ -10,17 +10,17 @@ import spinner from '../assets/spinner.gif';
 function Detail() {
   const [ state, dispatch ] = useStoreContext();
   const { id } = useParams();
-  const [ currentProduct, setCurrentProduct ] = useState({})
+  const [ currentProduct, setCurrentProduct ] = useState({});
   const { loading, data } = useQuery(QUERY_PRODUCTS);
   const { products } = state;
 
   useEffect(() => {
     if (products.length) {
-      setCurrentProduct(products.find(product => product._id===id));
+      setCurrentProduct(products.find(product => product._id === id));
     } else if (data) {
       dispatch({
         type: UPDATE_PRODUCTS,
-        products: data.products
+        products: data.products,
       });
     }
   }, [ products, data, dispatch, id ]);
@@ -46,8 +46,8 @@ function Detail() {
             alt={ currentProduct.name }
           />
         </div>
-      ):null }
-      { loading ? <img src={ spinner } alt="loading"/>:null }
+      ) : null }
+      { loading ? <img src={ spinner } alt="loading"/> : null }
     </>
   );
 }
