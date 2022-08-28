@@ -18,7 +18,7 @@ function ProductList() {
     if (data) {
       dispatch({
         type: UPDATE_PRODUCTS,
-        products: data.products
+        products: data.products,
       });
     }
   }, [ data, dispatch ]);
@@ -28,7 +28,7 @@ function ProductList() {
       return state.products;
     }
 
-    return state.products.filter(product => product.category._id===currentCategory);
+    return state.products.filter(product => product.category._id === currentCategory);
   }
 
   return (
@@ -40,10 +40,10 @@ function ProductList() {
             <ProductItem key={ product._id } { ...product } />
           )) }
         </div>
-      ):(
+      ) : (
         <h3>You haven't added any products yet!</h3>
       ) }
-      { loading ? <img src={ spinner } alt="loading"/>:null }
+      { loading ? <img src={ spinner } alt="loading"/> : null }
     </div>
   );
 }

@@ -16,7 +16,7 @@ const resolvers = {
 
       if (name) {
         params.name = {
-          $regex: name
+          $regex: name,
         };
       }
 
@@ -29,7 +29,7 @@ const resolvers = {
       if (context.user) {
         const user = await User.findById(context.user._id).populate({
           path: 'orders.products',
-          populate: 'category'
+          populate: 'category',
         });
 
         user.orders.sort((a, b) => b.purchaseDate - a.purchaseDate);
@@ -43,14 +43,14 @@ const resolvers = {
       if (context.user) {
         const user = await User.findById(context.user._id).populate({
           path: 'orders.products',
-          populate: 'category'
+          populate: 'category',
         });
 
         return user.orders.id(_id);
       }
 
       throw new AuthenticationError('Not logged in');
-    }
+    },
   },
   Mutation: {
     addUser: async (parent, args) => {
@@ -99,8 +99,8 @@ const resolvers = {
       const token = signToken(user);
 
       return { token, user };
-    }
-  }
+    },
+  },
 };
 
 module.exports = resolvers;

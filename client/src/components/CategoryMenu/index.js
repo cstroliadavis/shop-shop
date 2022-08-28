@@ -17,7 +17,7 @@ function CategoryMenu() {
     if (categoryData) {
       dispatch({
         type: UPDATE_CATEGORIES,
-        categories: categoryData.categories
+        categories: categoryData.categories,
       });
     }
   }, [ categoryData, dispatch ]);
@@ -25,7 +25,7 @@ function CategoryMenu() {
   const handleClick = id => {
     dispatch({
       type: UPDATE_CURRENT_CATEGORY,
-      currentCategory: id
+      currentCategory: id,
     });
   };
 
