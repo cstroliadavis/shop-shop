@@ -1,4 +1,6 @@
 const { AuthenticationError } = require('apollo-server-express');
+const stripe = require('stripe')(process.env.STRIPE_API_KEY);
+
 const { User, Product, Category, Order } = require('../models');
 const { signToken } = require('../utils/auth');
 
@@ -6,6 +8,36 @@ const resolvers = {
   Query: {
     categories: async () => {
       return await Category.find();
+    },
+    checkout: async (parent, args, context) => {
+      const url = new URL(context.headers.referer).origin;
+      const order = new Order({ products: args.products });
+      const { products } = await order.populate('products').execPopulate();
+
+      const line_items = products.map(({ name, description, price, image }) => ({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name,
+            description,
+            images: [ `${ url }/images/${ image }` ],
+          },
+          unit_amount: +price * 100,
+        },
+        quantity: 1,
+      }));
+
+
+      const session = await stripe.checkout.sessions.create({
+        line_items,
+        mode: 'payment',
+        success_url: `${ url }/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${ url }/`,
+      });
+
+      console.log(session);
+
+      return { session: session.id };
     },
     products: async (parent, { category, name }) => {
       const params = {};
@@ -16,7 +48,7 @@ const resolvers = {
 
       if (name) {
         params.name = {
-          $regex: name
+          $regex: name,
         };
       }
 
@@ -29,7 +61,7 @@ const resolvers = {
       if (context.user) {
         const user = await User.findById(context.user._id).populate({
           path: 'orders.products',
-          populate: 'category'
+          populate: 'category',
         });
 
         user.orders.sort((a, b) => b.purchaseDate - a.purchaseDate);
@@ -43,14 +75,14 @@ const resolvers = {
       if (context.user) {
         const user = await User.findById(context.user._id).populate({
           path: 'orders.products',
-          populate: 'category'
+          populate: 'category',
         });
 
         return user.orders.id(_id);
       }
 
       throw new AuthenticationError('Not logged in');
-    }
+    },
   },
   Mutation: {
     addUser: async (parent, args) => {
@@ -99,8 +131,8 @@ const resolvers = {
       const token = signToken(user);
 
       return { token, user };
-    }
-  }
+    },
+  },
 };
 
 module.exports = resolvers;

@@ -59,7 +59,7 @@ function Login() {
           <div>
             <p className="error-text">The provided credentials are incorrect</p>
           </div>
-        ):null }
+        ) : null }
         <div className="flex-row flex-end">
           <button type="submit">Submit</button>
         </div>
