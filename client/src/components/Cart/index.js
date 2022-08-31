@@ -1,26 +1,41 @@
 import React, { useEffect } from "react";
+import { loadStripe } from '@stripe/stripe-js';
+import { useLazyQuery } from '@apollo/client';
 
 import Auth from '../../utils/auth';
 import CartItem from '../CartItem';
 import { idbPromise } from "../../utils/helpers";
-import { TOGGLE_CART, ADD_MULTIPLE_TO_CART } from "../../utils/actions";
+import { QUERY_CHECKOUT } from '../../utils/queries';
+import { ADD_MULTIPLE_TO_CART, TOGGLE_CART } from "../../utils/actions";
 import { useStoreContext } from '../../utils/GlobalState';
-
 import './style.css';
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
 const Cart = () => {
   const [ state, dispatch ] = useStoreContext();
+  const [ getCheckout, { data } ] = useLazyQuery(QUERY_CHECKOUT);
 
   function toggleCart() {
     dispatch({ type: TOGGLE_CART });
   }
 
   function calculateTotal() {
-    let sum = 0;
-    state.cart.forEach(item => {
-      sum += item.price * item.purchaseQuantity;
-    });
+    let sum = state.cart.reduce((sum, item) => sum + item.price * item.purchaseQuantity, 0);
     return sum.toFixed(2);
+  }
+
+
+  function submitCheckout() {
+    const products = state.cart.reduce((prevIds, item) =>
+        [
+          ...prevIds,
+          ...[ ...Array(item.purchaseQuantity) ].map(() => item._id) ],
+      []);
+
+    getCheckout({
+      variables: { products },
+    });
   }
 
   useEffect(() => {
@@ -33,6 +48,14 @@ const Cart = () => {
       getCart();
     }
   }, [ state.cart.length, dispatch ]);
+
+  useEffect(() => {
+    if (data) {
+      stripePromise.then((res) => {
+        res.redirectToCheckout({ sessionId: data.checkout.session });
+      });
+    }
+  }, [ data ]);
 
   if (!state.cartOpen) {
     return (
@@ -55,7 +78,7 @@ const Cart = () => {
             <strong>Total: ${ calculateTotal() }</strong>
             {
               Auth.loggedIn() ?
-                <button>
+                <button onClick={ submitCheckout }>
                   Checkout
                 </button>
                 :
