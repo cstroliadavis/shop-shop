@@ -6,6 +6,10 @@ const typeDefs = gql`
     name: String
   }
 
+  type Checkout {
+    session: ID
+  }
+
   type Product {
     _id: ID
     name: String
@@ -37,6 +41,7 @@ const typeDefs = gql`
 
   type Query {
     categories: [Category]
+    checkout(products:[ID]!): Checkout
     products(category: ID, name: String): [Product]
     product(_id: ID!): Product
     user: User
