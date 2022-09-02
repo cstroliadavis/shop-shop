@@ -1,46 +1,40 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@apollo/client';
+import { useDispatch, useSelector } from 'react-redux';
 
 import ProductItem from '../ProductItem';
 import spinner from '../../assets/spinner.gif';
 import { idbPromise } from "../../utils/helpers";
 import { QUERY_PRODUCTS } from '../../utils/queries';
-import { UPDATE_PRODUCTS } from '../../utils/actions';
-import { useStoreContext } from '../../utils/GlobalState';
+import { getCurrentCategory, getProductsList, updateProducts } from '../../utils/productSlice';
 
 function ProductList() {
-  const [ state, dispatch ] = useStoreContext();
-
-  const { currentCategory, products } = state;
+  const dispatch = useDispatch();
+  const currentCategory = useSelector(getCurrentCategory);
+  const products = useSelector(getProductsList);
 
   const { loading, data } = useQuery(QUERY_PRODUCTS);
 
   useEffect(() => {
     if (data) {
-      dispatch({
-        type: UPDATE_PRODUCTS,
-        products: data.products,
-      });
+      dispatch(updateProducts(data.products));
 
       data.products.forEach((product) => {
         idbPromise('products', 'put', product);
       });
     } else if (!loading) {
       idbPromise('products', 'get').then((products) => {
-        dispatch({
-          type: UPDATE_PRODUCTS,
-          products: products,
-        });
+        dispatch(updateProducts(products));
       });
     }
   }, [ data, loading, dispatch ]);
 
   function filterProducts() {
     if (!currentCategory) {
-      return state.products;
+      return products;
     }
 
-    return state.products.filter(product => product.category._id === currentCategory);
+    return products.filter(product => product.category._id === currentCategory);
   }
 
   return (
@@ -48,9 +42,11 @@ function ProductList() {
       <h2>Our Products:</h2>
       { products.length ? (
         <div className="flex-row">
-          { filterProducts().map((product) => (
-            <ProductItem key={ product._id } { ...product } />
-          )) }
+          {
+            filterProducts().map((product) => (
+              <ProductItem key={ product._id } { ...product } />
+            ))
+          }
         </div>
       ) : (
         <h3>You haven't added any products yet!</h3>
