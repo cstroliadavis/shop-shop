@@ -1,11 +1,14 @@
 import React, { useEffect } from "react";
 import { useMutation } from '@apollo/client';
+import { useDispatch } from 'react-redux';
 
 import Jumbotron from "../components/Jumbotron";
 import { ADD_ORDER } from '../utils/mutations';
 import { idbPromise } from "../utils/helpers";
+import { clearCart } from '../utils/productSlice';
 
 const Success = () => {
+  const dispatch = useDispatch();
   const [ addOrder ] = useMutation(ADD_ORDER);
 
   useEffect(() => {
@@ -17,15 +20,13 @@ const Success = () => {
         const { data } = await addOrder({ variables: { products } });
         const productData = data.addOrder.products;
 
-        await Promise.all(
-          productData.map((product) => idbPromise('cart', 'delete', product)),
-        );
-
+        dispatch(clearCart());
+        productData.map((product) => idbPromise('cart', 'delete', product));
       }
     }
 
-    saveOrder()
-      .finally(() => setTimeout(() => window.location.assign(window.location.origin), 3000));
+    saveOrder();
+    setTimeout(() => window.location.assign('/'), 3000);
   }, [ addOrder ]);
 
   return (
